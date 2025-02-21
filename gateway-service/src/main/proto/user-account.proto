@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.shegami.gatewayservice";
+option java_outer_classname = "UserAccountProto";
+
+package gatewayService;
+
+// Service definition
+service UserAccountService {
+  rpc GetUser (UserRequest) returns (UserResponse);
+}
+
+// Request message
+message UserRequest {
+  string username = 1;
+}
+
+// Response message
+message UserResponse {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string password = 4;
+  repeated Role roles = 5;
+}
+
+// Role message
+message Role {
+  string id = 1;
+  string name = 2;
+}
