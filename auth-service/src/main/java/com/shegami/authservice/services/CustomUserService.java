@@ -7,6 +7,7 @@ import com.shegami.authservice.UserAccountServiceGrpc;
 import com.shegami.authservice.UserRequest;
 import com.shegami.authservice.UserResponse;
 import com.shegami.authservice.models.AccountDto;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,6 +24,7 @@ import static com.shegami.authservice.Utils.mappers.DtoMappers.grpcRoleListToRol
 
 
 @Service
+@Slf4j
 public class CustomUserService implements UserDetailsService {
 
 
@@ -46,7 +48,9 @@ public class CustomUserService implements UserDetailsService {
                 .password(userResponse.getPassword())
                 .types(grpcRoleListToRoleDtoCollection(userResponse.getTypesList())).build();
 
-        Collection<GrantedAuthority> authorities = user.getTypes().stream().map(type -> new SimpleGrantedAuthority(String.valueOf(type.getName()))).collect(Collectors.toList());
+        Collection<GrantedAuthority> authorities = user.getTypes().stream()
+                .map(type -> new SimpleGrantedAuthority(String.valueOf(type.getName()))).collect(Collectors.toList());
+
 
         return User
                 .withUsername(user.getEmail())

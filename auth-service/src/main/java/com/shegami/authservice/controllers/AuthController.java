@@ -49,7 +49,6 @@ public class AuthController {
         Map<String, String> map = new HashMap<>();
 
         AccountDto appUser = userService.findUserByEmail(registerDto.getEmail());
-        log.info("Registering user: {}", appUser);
         if (appUser != null) {
             throw new ApiRequestException("Username already exists");
         }
@@ -82,6 +81,7 @@ public class AuthController {
         }
 
         try {
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
 
@@ -94,10 +94,14 @@ public class AuthController {
                     .issuer("security-service")
                     .claim("scope", scope)
                     .build();
+
             jwtAccessToken = jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
+
             map.put("Message", "Login Successfully");
             map.put("accessToken", jwtAccessToken);
+
         } catch (AuthenticationException exception) {
+
             map.put("Message", "Wrong Password");
             map.put("Error", exception.getMessage());
             return new ResponseEntity<>(map, HttpStatus.resolve(401));

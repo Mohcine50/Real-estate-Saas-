@@ -12,5 +12,5 @@ import lombok.Setter;
 @Setter
 public class AccountTypeDto {
     String id;
-    Type name;
+    String name;
 }

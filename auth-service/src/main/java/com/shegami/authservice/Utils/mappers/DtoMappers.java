@@ -14,7 +14,7 @@ public class DtoMappers {
         return types.stream()
                 .map(type -> AccountTypeDto.builder()
                         .id(type.getId())
-                        .name(Type.getValue(String.valueOf(type.getName())))
+                        .name(type.getName())
                         .build())
                 .collect(Collectors.toList());
 

@@ -27,7 +27,7 @@ public class UserManagementServiceApplication {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+    //@Bean
     CommandLineRunner commandLineRunner(AccountService accountService) {
 
         return args -> {
