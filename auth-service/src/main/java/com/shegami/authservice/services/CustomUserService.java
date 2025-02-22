@@ -34,6 +34,7 @@ public class CustomUserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+
         UserRequest request = UserRequest.newBuilder().setEmail(email).build();
 
         // Call the gRPC service

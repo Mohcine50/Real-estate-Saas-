@@ -6,6 +6,8 @@ import com.shegami.usermanagementservice.UserAccountServiceGrpc;
 import com.shegami.usermanagementservice.UserRequest;
 import com.shegami.usermanagementservice.UserResponse;
 import com.shegami.usermanagementservice.entities.Account;
+import com.shegami.usermanagementservice.models.AddressDto;
+import com.shegami.usermanagementservice.models.ProfileDto;
 import com.shegami.usermanagementservice.models.RegisterDto;
 import com.shegami.usermanagementservice.Type;
 import com.shegami.usermanagementservice.services.rest.AccountService;
@@ -25,20 +27,34 @@ public class UserAccountService extends UserAccountServiceGrpc.UserAccountServic
     @Autowired
     private AccountService accountService;
 
-
-
     @Override
     public void addNewUser(AddNewUserRequest request, StreamObserver<AddNewUserResponse> responseObserver) {
 
 
-log.info("addNewUser: {}", request);
+        log.info("addNewUser: {}", request);
+
+        ProfileDto profile = ProfileDto.builder()
+                .address(
+                        (!request.getAddress().getZip().isEmpty() || request.getAddress().getZip().isBlank()) ? AddressDto.builder()
+                                .city(request.getAddress().getCity())
+                                .country(request.getAddress().getCountry())
+                                .state(request.getAddress().getState())
+                                .zip(request.getAddress().getZip())
+                                .street(request.getAddress().getStreet())
+                                .build() : null
+                )
+                .lastName(request.getLastName())
+                .firstName(request.getFirstName())
+                .phoneNumber(request.getPhoneNumber())
+                .build();
 
         RegisterDto registerDto = RegisterDto.builder()
                 .password(request.getPassword())
                 .email(request.getEmail())
+                .profile(profile)
                 .build();
 
-        var user = accountService.addNewUser(registerDto);
+        var user = accountService.registerNewUser(registerDto);
 
 
         responseObserver.onNext(
@@ -51,12 +67,12 @@ log.info("addNewUser: {}", request);
     public void getUser(UserRequest request, StreamObserver<UserResponse> responseObserver) {
 
 
-        log.info("getUser: {}", request);
         Account appUser = accountService.loadUserByEmail(request.getEmail());
-        log.info("appUser: {}", appUser);
+
+
         UserResponse userResponse = null;
 
-        if(appUser != null) {
+        if (appUser != null) {
 
             Iterable<Type> types = appUser.getTypes().stream()
                     .map(role -> Type.newBuilder()
@@ -77,7 +93,6 @@ log.info("addNewUser: {}", request);
         responseObserver.onCompleted();
 
     }
-
 
 
 }

@@ -90,8 +90,8 @@ public class AuthController {
             jwtClaimsSet = JwtClaimsSet.builder()
                     .subject(authentication.getName())
                     .issuedAt(instant)
-                    .expiresAt(instant.plus(30, ChronoUnit.MINUTES))
-                    .issuer("security-service")
+                    .expiresAt(instant.plus(60, ChronoUnit.MINUTES))
+                    .issuer("auth-service")
                     .claim("scope", scope)
                     .build();
 

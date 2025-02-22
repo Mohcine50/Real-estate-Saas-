@@ -43,12 +43,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean registerNewUser(RegisterDto registerDto) {
 
+        log.info("Registering new user: {}", registerDto.getProfile());
+        Address address = registerDto.getProfile().getAddress() != null ? Address.newBuilder()
+                .setStreet(registerDto.getProfile().getAddress().getStreet())
+                .setCity(registerDto.getProfile().getAddress().getCity())
+                .setState(registerDto.getProfile().getAddress().getState())
+                .setZip(registerDto.getProfile().getAddress().getZip())
+                .setCountry(registerDto.getProfile().getAddress().getCountry())
+                .build() : null;
+
         AddNewUserRequest userRequest = AddNewUserRequest.newBuilder()
                 .setEmail(registerDto.getEmail())
                 .setPassword(registerDto.getPassword())
+                .setAddress(address)
+                .setFirstName(registerDto.getProfile().getFirstName())
+                .setLastName(registerDto.getProfile().getLastName())
+                .setPhoneNumber(registerDto.getProfile().getPhoneNumber())
                 .build();
 
         AddNewUserResponse newUserResponse = userAccountServiceStub.addNewUser(userRequest);
+        log.info("Registering new user: \n {}", newUserResponse);
 
         return newUserResponse != null && newUserResponse.getCreated();
 

@@ -37,6 +37,8 @@ public class Account {
     @ManyToMany(fetch = FetchType.EAGER)
     private Collection<AccountPermission> permissions = new ArrayList<>();
 
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Profile profile;
 
 
 }

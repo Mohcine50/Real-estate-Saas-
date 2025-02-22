@@ -15,6 +15,18 @@ service UserAccountService {
 message AddNewUserRequest {
   string email = 1;
   string password = 2;
+  string firstName = 3;
+  string lastName = 4;
+  string phoneNumber = 5;
+  Address address = 6; // Optional field
+}
+
+message Address {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string zip = 4;
+  string country = 5;
 }
 
 message AddNewUserResponse {

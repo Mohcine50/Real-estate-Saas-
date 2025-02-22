@@ -10,7 +10,7 @@ import com.shegami.usermanagementservice.models.Type;
 import java.util.List;
 
 public interface AccountService {
-    Account addNewUser(RegisterDto registerDto);
+    Account registerNewUser(RegisterDto registerDto);
 
     Account getUserById(String id);
 

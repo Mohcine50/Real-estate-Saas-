@@ -3,12 +3,20 @@ package com.shegami.usermanagementservice.services.rest;
 
 import com.shegami.usermanagementservice.entities.Account;
 import com.shegami.usermanagementservice.entities.AccountType;
+import com.shegami.usermanagementservice.entities.Address;
+import com.shegami.usermanagementservice.entities.Profile;
 import com.shegami.usermanagementservice.exceptions.ApiRequestException;
 import com.shegami.usermanagementservice.exceptions.NotFoundException;
+import com.shegami.usermanagementservice.models.AddressDto;
 import com.shegami.usermanagementservice.models.RegisterDto;
 import com.shegami.usermanagementservice.models.Type;
 import com.shegami.usermanagementservice.repositories.AccountRepository;
+import com.shegami.usermanagementservice.repositories.AddressRepository;
+import com.shegami.usermanagementservice.repositories.ProfileRepository;
 import com.shegami.usermanagementservice.repositories.RoleRepository;
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,39 +25,63 @@ import java.util.Collection;
 import java.util.List;
 
 
+@Slf4j
 @Service
+@AllArgsConstructor
 public class AccountServiceImpl implements AccountService {
+
+
     private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AddressRepository addressRepository;
+    private final ProfileRepository profileRepository;
 
-    public AccountServiceImpl(AccountRepository accountRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
-        this.accountRepository = accountRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
+    @Transactional
     @Override
-    public Account addNewUser(RegisterDto registerDto) {
+    public Account registerNewUser(RegisterDto registerDto) {
 
-        Account user = accountRepository.findByEmail(registerDto.getEmail());
-        if (user != null) {
-            throw new ApiRequestException("Username Already Exist please try other one");
+        try {
+            Account user = accountRepository.findByEmail(registerDto.getEmail());
+            if (user != null) {
+                throw new ApiRequestException("Username Already Exist please try other one");
+            }
+
+            AccountType type = roleRepository.findByName(Type.INDIVIDUAL.name());
+
+
+            Address address = null;
+            if (registerDto.getProfile().getAddress() != null) {
+                address = Address.builder()
+                        .city(registerDto.getProfile().getAddress().getCity())
+                        .country(registerDto.getProfile().getAddress().getCountry())
+                        .street(registerDto.getProfile().getAddress().getStreet())
+                        .zip(registerDto.getProfile().getAddress().getZip())
+                        .state(registerDto.getProfile().getAddress().getState())
+                        .build();
+            }
+
+            Profile profile = Profile.builder()
+                    .firstName(registerDto.getProfile().getFirstName())
+                    .lastName(registerDto.getProfile().getLastName())
+                    .phoneNumber(registerDto.getProfile().getPhoneNumber())
+                    .addresses(address == null ? null : List.of(address))
+                    .build();
+
+
+            Account newUser = Account.builder()
+                    .password(passwordEncoder.encode(registerDto.getPassword()))
+                    .email(registerDto.getEmail())
+                    .types(List.of(type))
+                    .profile(profile)
+                    .build();
+
+            return accountRepository.save(newUser);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new ApiRequestException(e.getMessage());
         }
-
-        AccountType type = roleRepository.findByName(Type.INDIVIDUAL.name());
-
-        Account newUser = Account.builder()
-                .password(passwordEncoder.encode(registerDto.getPassword()))
-                .email(registerDto.getEmail())
-                .types(List.of(type))
-                .build();
-
-
-        accountRepository.save(newUser);
-
-
-        return newUser;
     }
 
     @Override
@@ -62,7 +94,6 @@ public class AccountServiceImpl implements AccountService {
 
         return user;
     }
-
 
 
     @Override

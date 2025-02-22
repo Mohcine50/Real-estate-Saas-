@@ -23,4 +23,7 @@ public class RegisterDto {
     @Size(min = 8, message = "Weak Password")
     private String password;
 
+    @NotNull(message = "Profile must not be null")
+    private ProfileDto profile;
+
 }
