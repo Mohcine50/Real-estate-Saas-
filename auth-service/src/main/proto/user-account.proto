@@ -4,7 +4,7 @@ option java_multiple_files = true;
 option java_package = "com.shegami.authservice";
 option java_outer_classname = "UserAccountProto";
 
-package authservice;
+package usermanagementservice;
 
 // Service definition
 service UserAccountService {
@@ -13,9 +13,8 @@ service UserAccountService {
 }
 
 message AddNewUserRequest {
-  string username = 1;
-  string email = 2;
-  string password = 3;
+  string email = 1;
+  string password = 2;
 }
 
 message AddNewUserResponse {
@@ -23,7 +22,7 @@ message AddNewUserResponse {
 }
 // Request message
 message UserRequest {
-  string username = 1;
+  string email = 1;
 }
 
 
@@ -31,14 +30,13 @@ message UserRequest {
 // Response message
 message UserResponse {
   string id = 1;
-  string username = 2;
-  string email = 3;
-  string password = 4;
-  repeated Role roles = 5;
+  string email = 2;
+  string password = 3;
+  repeated Type types = 4;
 }
 
 // Role message
-message Role {
+message Type {
   string id = 1;
   string name = 2;
 }

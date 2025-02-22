@@ -1,12 +1,13 @@
 package com.shegami.usermanagementservice.services.rest;
 
 
-import com.shegami.usermanagementservice.entities.AppUser;
-import com.shegami.usermanagementservice.entities.Role;
+import com.shegami.usermanagementservice.entities.Account;
+import com.shegami.usermanagementservice.entities.AccountType;
 import com.shegami.usermanagementservice.exceptions.ApiRequestException;
 import com.shegami.usermanagementservice.exceptions.NotFoundException;
 import com.shegami.usermanagementservice.models.RegisterDto;
-import com.shegami.usermanagementservice.repositories.AppUserRepository;
+import com.shegami.usermanagementservice.models.Type;
+import com.shegami.usermanagementservice.repositories.AccountRepository;
 import com.shegami.usermanagementservice.repositories.RoleRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,44 +19,42 @@ import java.util.List;
 
 @Service
 public class AccountServiceImpl implements AccountService {
-    private final AppUserRepository appUserRepository;
+    private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AccountServiceImpl(AppUserRepository appUserRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
-        this.appUserRepository = appUserRepository;
+    public AccountServiceImpl(AccountRepository accountRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public AppUser addNewUser(RegisterDto registerDto) {
+    public Account addNewUser(RegisterDto registerDto) {
 
-
-        AppUser user = appUserRepository.findByUsername(registerDto.getUsername());
+        Account user = accountRepository.findByEmail(registerDto.getEmail());
         if (user != null) {
             throw new ApiRequestException("Username Already Exist please try other one");
         }
 
-        Role role = roleRepository.findByName("USER");
+        AccountType type = roleRepository.findByName(Type.INDIVIDUAL.name());
 
-        AppUser newUser = AppUser.builder()
-                .username(registerDto.getUsername())
+        Account newUser = Account.builder()
                 .password(passwordEncoder.encode(registerDto.getPassword()))
                 .email(registerDto.getEmail())
-                .roles(List.of(role))
+                .types(List.of(type))
                 .build();
 
 
-        appUserRepository.save(newUser);
+        accountRepository.save(newUser);
 
 
         return newUser;
     }
 
     @Override
-    public AppUser getUserById(String id) {
-        AppUser user = appUserRepository.findById(id).orElse(null);
+    public Account getUserById(String id) {
+        Account user = accountRepository.findById(id).orElse(null);
 
         if (user == null) {
             throw new NotFoundException("No User Found With ID: " + id);
@@ -64,26 +63,17 @@ public class AccountServiceImpl implements AccountService {
         return user;
     }
 
-    @Override
-    public AppUser getUserByUsername(String username) {
-        AppUser user = appUserRepository.findByUsername(username);
 
-        if (user == null) {
-            throw new NotFoundException("No User Found With Username: " + username);
-        }
-
-        return user;
-    }
 
     @Override
-    public Role addNewRole(Role role) {
+    public AccountType addNewType(AccountType role) {
 
-        Role role1 = roleRepository.findByName(role.getName());
-        if (role1 != null) {
+        AccountType type = roleRepository.findByName(role.getName());
+        if (type != null) {
             throw new ApiRequestException("Role Already exist");
         }
 
-        Role newRole = Role.builder()
+        AccountType newRole = AccountType.builder()
                 .name(role.getName())
                 .build();
 
@@ -94,43 +84,43 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void addRoleToUser(String username, String roleName) {
+    public void addRoleToUser(String email, Type roleName) {
 
-        AppUser user = appUserRepository.findByUsername(username);
+        Account user = accountRepository.findByEmail(email);
         if (user == null) throw new NotFoundException("User Not Found");
-        Role role = roleRepository.findByName(roleName);
+        AccountType role = roleRepository.findByName(roleName.name());
         if (role == null) throw new NotFoundException("Role Not Found");
 
 
-        Collection<Role> roles = user.getRoles();
-        if (roles == null) {
-            roles = new ArrayList<>(List.of(role));
+        Collection<AccountType> types = user.getTypes();
+        if (types == null) {
+            types = new ArrayList<>(List.of(role));
         } else {
-            roles.add(role);
+            types.add(role);
         }
 
     }
 
     @Override
-    public void deleteRoleFromUser(String username, String roleName) {
-        AppUser user = appUserRepository.findByUsername(username);
+    public void deleteRoleFromUser(String email, Type roleName) {
+        Account user = accountRepository.findByEmail(email);
         if (user == null) throw new NotFoundException("User Not Found");
-        Role role = roleRepository.findByName(roleName);
+        AccountType role = roleRepository.findByName(roleName.name());
         if (role == null) throw new NotFoundException("Role Not Found");
 
 
-        Collection<Role> roles = user.getRoles();
+        Collection<AccountType> roles = user.getTypes();
         roles.remove(role);
     }
 
     @Override
-    public AppUser loadUserByUsername(String username) {
-        return appUserRepository.findByUsername(username);
+    public Account loadUserByEmail(String email) {
+        return accountRepository.findByEmail(email);
     }
 
     @Override
-    public List<AppUser> listUser() {
-        return appUserRepository.findAll();
+    public List<Account> listUser() {
+        return accountRepository.findAll();
     }
 
     @Override
@@ -140,6 +130,6 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void deleteUser(String id) {
-        appUserRepository.deleteById(id);
+        accountRepository.deleteById(id);
     }
 }

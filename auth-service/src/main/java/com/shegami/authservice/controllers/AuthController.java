@@ -3,7 +3,7 @@ package com.shegami.authservice.controllers;
 
 import com.shegami.authservice.exceptions.ApiRequestException;
 import com.shegami.authservice.exceptions.NotFoundException;
-import com.shegami.authservice.models.AppUserDto;
+import com.shegami.authservice.models.AccountDto;
 import com.shegami.authservice.models.LoginDto;
 import com.shegami.authservice.models.RegisterDto;
 import com.shegami.authservice.services.UserService;
@@ -11,7 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -30,15 +29,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/")
+@Slf4j
 public class AuthController {
 
     private final JwtEncoder jwtEncoder;
@@ -50,8 +48,8 @@ public class AuthController {
 
         Map<String, String> map = new HashMap<>();
 
-        AppUserDto appUser = userService.findUserByUsername(registerDto.getUsername());
-
+        AccountDto appUser = userService.findUserByEmail(registerDto.getEmail());
+        log.info("Registering user: {}", appUser);
         if (appUser != null) {
             throw new ApiRequestException("Username already exists");
         }
@@ -78,14 +76,14 @@ public class AuthController {
         String jwtAccessToken;
 
 
-        AppUserDto appUser = userService.findUserByUsername(loginDto.getUsername());
+        AccountDto appUser = userService.findUserByEmail(loginDto.getEmail());
         if (appUser == null) {
             throw new NotFoundException("User Not Found");
         }
 
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
+                    new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
 
             String scope = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
 

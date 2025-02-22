@@ -12,10 +12,6 @@ import lombok.Data;
 @Builder
 public class RegisterDto {
 
-    @NotBlank(message = "Username is empty")
-    @Size(min = 3, max = 15, message = "Username length should be between 3 and 15 chars")
-    @NotNull(message = "Username is empty")
-    private String username;
 
     @NotBlank(message = "Email is empty")
     @NotNull(message = "Email is empty")

@@ -1,6 +1,7 @@
 package com.shegami.usermanagementservice.services.rest;
 
-import com.shegami.usermanagementservice.entities.AppUser;
+import com.shegami.usermanagementservice.entities.Account;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -15,7 +16,6 @@ import java.util.stream.Collectors;
 @Service
 public class CustomUserDetailsServiceImpl implements UserDetailsService {
 
-
     private final AccountService accountService;
 
     public CustomUserDetailsServiceImpl(AccountService accountService) {
@@ -25,12 +25,12 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        AppUser user = accountService.loadUserByUsername(username);
+        Account user = accountService.loadUserByEmail(username);
 
-        Collection<GrantedAuthority> authorities = user.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
+        Collection<GrantedAuthority> authorities = user.getTypes().stream().map(role -> new SimpleGrantedAuthority(String.valueOf(role.getName()))).collect(Collectors.toList());
 
         return User
-                .withUsername(user.getUsername())
+                .withUsername(user.getEmail())
                 .password(user.getPassword())
                 .authorities(authorities)
                 .build();

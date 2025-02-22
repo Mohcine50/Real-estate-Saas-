@@ -1,44 +1,49 @@
 package com.shegami.authservice.services;
 
 import com.shegami.authservice.*;
-import com.shegami.authservice.models.AppUserDto;
+import com.shegami.authservice.models.AccountDto;
 import com.shegami.authservice.models.RegisterDto;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
 import static com.shegami.authservice.Utils.mappers.DtoMappers.grpcRoleListToRoleDtoCollection;
 
+
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
 
-    @GrpcClient("auth-service")
+    @GrpcClient("user-service")
     private UserAccountServiceGrpc.UserAccountServiceBlockingStub userAccountServiceStub;
 
 
-
     @Override
-    public AppUserDto findUserByUsername(String username) {
-        UserRequest request = UserRequest.newBuilder().setUsername(username).build();
+    public AccountDto findUserByEmail(String email) {
+        UserRequest request = UserRequest.newBuilder().setEmail(email).build();
+
 
         // Call the gRPC service
         UserResponse userResponse = userAccountServiceStub.getUser(request);
 
-        if (userResponse == null) return null;
+        log.info("Registering user: {}", userResponse);
+
+        String id = userResponse.getId();
+        if (id.isEmpty()) return null;
 
 
-        return new AppUserDto.Builder()
-                .username(userResponse.getUsername())
+        return new AccountDto.Builder()
                 .id(userResponse.getId())
                 .email(userResponse.getEmail())
                 .password(userResponse.getPassword())
-                .roles(grpcRoleListToRoleDtoCollection(userResponse.getRolesList())).build();
+                .types(grpcRoleListToRoleDtoCollection(userResponse.getTypesList())).build();
     }
 
     @Override
     public Boolean registerNewUser(RegisterDto registerDto) {
 
         AddNewUserRequest userRequest = AddNewUserRequest.newBuilder()
-                .setUsername(registerDto.getUsername())
                 .setEmail(registerDto.getEmail())
                 .setPassword(registerDto.getPassword())
                 .build();

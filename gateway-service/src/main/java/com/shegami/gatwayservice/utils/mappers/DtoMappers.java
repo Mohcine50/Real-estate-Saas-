@@ -1,7 +1,7 @@
 package com.shegami.gatwayservice.utils.mappers;
 
-import com.shegami.gatewayservice.Role;
-import com.shegami.gatwayservice.models.RoleDto;
+import com.shegami.gatewayservice.Type;
+import com.shegami.gatwayservice.models.AccountTypeDto;
 
 import java.util.Collection;
 import java.util.List;
@@ -9,11 +9,11 @@ import java.util.stream.Collectors;
 
 public class DtoMappers {
 
-    public static Collection<RoleDto> grpcRoleListToRoleDtoCollection(List<Role> roles) {
+    public static Collection<AccountTypeDto> grpcRoleListToRoleDtoCollection(List<Type> roles) {
         return roles.stream()
-                .map(role -> new RoleDto.Builder()
-                        .id(role.getId())
-                        .name(role.getName())
+                .map(type -> new AccountTypeDto.Builder()
+                        .id(type.getId())
+                        .name(type.getName())
                         .build())
                 .collect(Collectors.toList());
 

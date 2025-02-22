@@ -1,8 +1,8 @@
 package com.shegami.usermanagementservice.entities;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.shegami.usermanagementservice.models.Permission;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,15 +17,12 @@ import java.util.Collection;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "users")
-public class AppUser {
+@Table(name = "accounts")
+public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-
-    @Column(nullable = false)
-    private String username;
 
     @Column(nullable = false)
     private String email;
@@ -34,6 +31,12 @@ public class AppUser {
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    private Collection<Role> roles = new ArrayList<>();
+    private Collection<AccountType> types = new ArrayList<>();
+
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Collection<AccountPermission> permissions = new ArrayList<>();
+
+
 
 }
